@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-KAMOD DEVILS WILL RISE — Fast Batch Activator (10 Threads, Major Login Fixed)
-Owner: @kamod_codex | Channel: @kamod_codex
-"""
-
 import os, sys, json, time, random, hashlib, hmac, uuid, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
@@ -34,7 +29,6 @@ AES_IV  = bytes([54, 111, 121, 90, 68, 114, 50, 50, 69, 51, 121, 99, 104, 106, 7
 DEFAULT_WORKERS = 10
 MAX_BATCH = 50
 
-# ── REGIONS ──
 REGIONS = {
     "IND": {
         "oauth_register": "https://connect.garena.com/api/v2/oauth/guest:register",
@@ -55,27 +49,7 @@ REGIONS = {
         "isps": ["Grameenphone", "Robi", "Banglalink", "Link3"],
         "ip_subnets": ["103.157", "103.205", "27.147", "118.179"],
         "cities": [("Dhaka","C"), ("Chittagong","B"), ("Sylhet","E")]
-    },
-    "PK": {
-        "oauth_register": "https://connect.garena.com/api/v2/oauth/guest:register",
-        "oauth_token":    "https://connect.garena.com/api/v2/oauth/guest/token:grant",
-        "login_host":  "loginbp.ggblueshark.com",
-        "client_host": "clientbp.ppmainecoonghj.com",
-        "gateway": "SG", "lang": "ur", "choose_code": "PK",
-        "isps": ["Jazz", "Zong 4G", "Telenor PK", "PTCL"],
-        "ip_subnets": ["39.40", "39.50", "111.68", "182.180"],
-        "cities": [("Karachi","SD"), ("Lahore","PB"), ("Islamabad","IS")]
-    },
-    "TW": {
-        "oauth_register": "https://connect.garena.com/api/v2/oauth/guest:register",
-        "oauth_token":    "https://connect.garena.com/api/v2/oauth/guest/token:grant",
-        "login_host":  "loginbp.ggblueshark.com",
-        "client_host": "clientbp.ppmainecoonghj.com",
-        "gateway": "SG", "lang": "zh-TW", "choose_code": "TW",
-        "isps": ["Chunghwa Telecom", "Taiwan Mobile", "FarEasTone"],
-        "ip_subnets": ["114.32", "211.20", "61.216"],
-        "cities": [("Taipei","TPE"), ("Kaohsiung","KHH")]
-    },
+    }
 }
 
 DEVICE_MODELS = [
@@ -86,7 +60,6 @@ DEVICE_MODELS = [
     {"brand": "Realme", "model": "realme RMX2001"},
 ]
 
-# ── PROTOBUF ──
 def write_varint(value):
     out = []
     while value > 127:
@@ -135,7 +108,6 @@ def parse_proto(data):
         except: break
     return out
 
-# ── CRYPTO ──
 def aes_encrypt(plain):
     if not isinstance(plain, (bytes, bytearray)): plain = plain.encode("utf-8")
     return AES.new(AES_KEY, AES.MODE_CBC, AES_IV).encrypt(pad(plain, AES.block_size))
@@ -147,7 +119,6 @@ def aes_decrypt(ciphertext):
         except ValueError: return AES.new(AES_KEY, AES.MODE_CBC, AES_IV).decrypt(ciphertext)
     except: return ciphertext
 
-# ── SESSION ──
 def create_session(proxy=None):
     s = requests.Session()
     s.verify = False
@@ -157,7 +128,6 @@ def create_session(proxy=None):
     if proxy: s.proxies = {"http": proxy, "https": proxy}
     return s
 
-# ── PROXY ──
 def get_proxy(region):
     if not os.path.exists("proxies.txt"): return None
     pool = []
@@ -168,7 +138,6 @@ def get_proxy(region):
                 pool.append(line.split(":", 1)[1])
     return f"http://{random.choice(pool)}" if pool else None
 
-# ── DATADOME ──
 def fetch_datadome_cookie(session, device_info, target_url):
     try:
         now_ms = int(time.time() * 1000)
@@ -198,7 +167,6 @@ def fetch_datadome_cookie(session, device_info, target_url):
     except: pass
     return None
 
-# ── DEVICE-ID ──
 def generate_device_id(session, device_info, dd_cookie=None, region_host="ffmmsdk.ppmainecoonghj.com"):
     try:
         brand = device_info.get("brand", "Google")
@@ -235,7 +203,6 @@ def generate_device_id(session, device_info, dd_cookie=None, region_host="ffmmsd
     except: pass
     return None
 
-# ── TOKEN ──
 def get_token(session, uid, password, region_code, device_info, device_id=""):
     reg = REGIONS[region_code]
     tok_url = reg["oauth_token"]
@@ -260,7 +227,6 @@ def get_token(session, uid, password, region_code, device_info, device_id=""):
         return None, None
     except: return None, None
 
-# ── MAJOR LOGIN ──
 def send_major_login(session, access_token, open_id, region_code, device_info):
     reg = REGIONS[region_code]
     host = reg["login_host"]
@@ -308,7 +274,6 @@ def send_major_login(session, access_token, open_id, region_code, device_info):
         r = session.post(f"https://{host}/MajorLogin", data=encrypted, headers=headers, timeout=25)
         print(f"[MajorLogin:{open_id[:6]}...] HTTP {r.status_code} len={len(r.content)}")
         if r.status_code != 200:
-            print(f"[MajorLogin:{open_id[:6]}...] FAIL body: {r.text[:200]}")
             return None
         raw = r.content
         for buf in (raw, aes_decrypt(raw), raw[64:] if len(raw) > 64 else b""):
@@ -320,15 +285,11 @@ def send_major_login(session, access_token, open_id, region_code, device_info):
                     try: jwt = jwt.decode("utf-8", "ignore")
                     except: jwt = ""
                 if isinstance(jwt, str) and jwt.startswith("eyJ") and jwt.count(".") == 2:
-                    print(f"[MajorLogin:{open_id[:6]}...] ✅ JWT OK")
                     return jwt
             except: pass
-        print(f"[MajorLogin:{open_id[:6]}...] No JWT hex={raw[:32].hex()}")
-    except Exception as e:
-        print(f"[MajorLogin] Exception: {e}")
+    except: pass
     return None
 
-# ── GETLOGINDATA ──
 def get_login_data(session, jwt, open_id, region_code, device_info):
     reg = REGIONS[region_code]
     host = reg["client_host"]
@@ -372,13 +333,9 @@ def get_login_data(session, jwt, open_id, region_code, device_info):
     }
     try:
         r = session.post(f"https://{host}/GetLoginData", data=encrypted, headers=headers, timeout=20)
-        print(f"[GetLoginData] HTTP {r.status_code}")
         return r.status_code == 200
-    except Exception as e:
-        print(f"[GetLoginData] Exception: {e}")
-        return False
+    except: return False
 
-# ── HOMER ──
 def equip_homer(session, jwt, region_code, device_info):
     reg = REGIONS[region_code]
     host = reg["client_host"]
@@ -405,7 +362,6 @@ def equip_homer(session, jwt, region_code, device_info):
     ))
     return r1 and r2
 
-# ── DECODE AID ──
 def decode_account_id(jwt):
     try:
         import base64
@@ -414,7 +370,6 @@ def decode_account_id(jwt):
         return jd.get("account_id") or jd.get("uid") or "N/A"
     except: return "N/A"
 
-# ── ACTIVATE SINGLE ──
 def activate_account(uid, password, region_code):
     if region_code not in REGIONS:
         return {"success": False, "error": f"Bad region {region_code}", "uid": uid, "password": password}
@@ -423,38 +378,19 @@ def activate_account(uid, password, region_code):
     session = create_session(proxy=proxy)
     reg = REGIONS[region_code]
 
-    print(f"\n[{uid}] ── START (region={region_code} device={device_info['model']} proxy={proxy or 'DIRECT'})")
-
-    # 1. DataDome
     dd = fetch_datadome_cookie(session, device_info, reg["oauth_token"])
-    print(f"[{uid}] DataDome: {'OK' if dd else 'NO COOKIE'}")
-
-    # 2. Device ID
     device_id = generate_device_id(session, device_info, dd)
-    print(f"[{uid}] DeviceID: {'OK' if device_id else 'FAIL'}")
-
-    # 3. Token grant
     at, oi = get_token(session, uid, password, region_code, device_info, device_id or "")
     if not at:
-        print(f"[{uid}] ❌ Token FAIL")
         return {"success": False, "error": "Token Grant Failed", "uid": uid, "password": password}
-    print(f"[{uid}] Token: OK (open_id={oi[:8]}...)")
 
-    # 4. Major Login
     jwt = send_major_login(session, at, oi, region_code, device_info)
     if not jwt:
-        print(f"[{uid}] ❌ MajorLogin FAIL")
         return {"success": False, "error": "Major Login Failed", "uid": uid, "password": password}
-    print(f"[{uid}] MajorLogin: JWT OK")
 
-    # 5. GetLoginData
     gw_ok = get_login_data(session, jwt, oi, region_code, device_info)
-
-    # 6. Homer
     homer_ok = equip_homer(session, jwt, region_code, device_info)
-
     aid = decode_account_id(jwt)
-    print(f"[{uid}] ✅ DONE aid={aid} gw={'OK' if gw_ok else 'FAIL'} homer={'OK' if homer_ok else 'FAIL'}")
 
     return {
         "success": True,
@@ -464,7 +400,6 @@ def activate_account(uid, password, region_code):
         "activate": True
     }
 
-# ── ACTIVATE BATCH ──
 def activate_batch(accounts, region_code, workers=10):
     results = []
     total = len(accounts)
@@ -487,7 +422,6 @@ def activate_batch(accounts, region_code, workers=10):
         "results": results
     }
 
-# ── SAVE ──
 _OUTPUT_LOCK = threading.Lock()
 def save_batch_output(batch_result, filename=None):
     if not filename:
@@ -507,8 +441,6 @@ def save_batch_output(batch_result, filename=None):
             json.dump(clean, f, indent=2, ensure_ascii=False)
     return filename, len(clean)
 
-# ── HTTP HANDLER ──
-# ── API ──
 class Handler(BaseHTTPRequestHandler):
     def _json(self, code, obj):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -533,18 +465,6 @@ class Handler(BaseHTTPRequestHandler):
         path = parsed.path.rstrip("/") or "/"
         qs = parse_qs(parsed.query)
 
-        if path == "/":
-            return self._json(200, {
-                "service": "KAMOD Activator v2",
-                "status": "online",
-                "endpoints": [
-                    "GET  /api/activate?uid=X&password=Y&region=IND",
-                    "GET  /api/activate_batch?accounts=uid1|pwd1;uid2|pwd2&region=IND&workers=10&save=1",
-                    "POST /api/activate_batch (JSON body)",
-                    "GET  /health"
-                ]
-            })
-
         if path == "/health":
             return self._json(200, {"status": "ok", "time": time.time()})
 
@@ -552,43 +472,14 @@ class Handler(BaseHTTPRequestHandler):
             uid = qs.get("uid", [""])[0]
             pwd = qs.get("password", [""])[0]
             region = qs.get("region", ["IND"])[0].upper()
-            if not uid or not pwd:
-                return self._json(400, {"error": "Missing uid/password"})
+            if not uid or not pwd: return self._json(400, {"error": "Missing uid/password"})
             result = activate_account(uid, pwd, region)
             return self._json(200 if result["success"] else 400, result)
 
-        if path == "/api/activate_batch":
-            raw = qs.get("accounts", [""])[0]
-            region = qs.get("region", ["IND"])[0].upper()
-            try: workers = int(qs.get("workers", [str(DEFAULT_WORKERS)])[0])
-            except: workers = DEFAULT_WORKERS
-            workers = max(1, min(workers, 20))
-            save = qs.get("save", ["0"])[0] in ("1", "true", "yes", "on")
-
-            if not raw:
-                return self._json(400, {"error": "Missing accounts (format: uid1|pwd1;uid2|pwd2)"})
-            accounts = []
-            for pair in raw.split(";"):
-                parts = pair.split("|", 1)
-                if len(parts) == 2 and parts[0].strip().isdigit():
-                    accounts.append({"uid": parts[0].strip(), "password": parts[1].strip()})
-            if not accounts:
-                return self._json(400, {"error": "No valid accounts"})
-            if len(accounts) > MAX_BATCH:
-                return self._json(400, {"error": f"Max {MAX_BATCH} per batch"})
-
-            result = activate_batch(accounts, region, workers)
-            if save:
-                fn, cnt = save_batch_output(result)
-                result["saved_file"] = fn
-                result["saved_count"] = cnt
-            return self._json(200, result)
-
-        return self._json(404, {"error": "Not found", "path": path})
+        return self._json(404, {"error": "Not found"})
 
     def do_POST(self):
         path = urlparse(self.path).path.rstrip("/") or "/"
-
         if path == "/api/activate_batch":
             req = self._read_json()
             region = str(req.get("region", "IND")).upper()
@@ -604,10 +495,8 @@ class Handler(BaseHTTPRequestHandler):
             for a in raw_accounts:
                 if isinstance(a, dict) and a.get("uid") and a.get("password"):
                     accounts.append({"uid": str(a["uid"]).strip(), "password": str(a["password"]).strip()})
-            if not accounts:
-                return self._json(400, {"error": "No valid accounts"})
-            if len(accounts) > MAX_BATCH:
-                return self._json(400, {"error": f"Max {MAX_BATCH} per batch"})
+            if not accounts: return self._json(400, {"error": "No valid accounts"})
+            if len(accounts) > MAX_BATCH: return self._json(400, {"error": f"Max {MAX_BATCH} per batch"})
 
             result = activate_batch(accounts, region, workers)
             if save:
@@ -616,65 +505,9 @@ class Handler(BaseHTTPRequestHandler):
                 result["saved_count"] = cnt
             return self._json(200, result)
 
-        return self._json(404, {"error": "Not found", "path": path})
+        return self._json(404, {"error": "Not found"})
 
-
-# ── BATCH ACTIVATION (10 THREADS) ──
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
-
-_OUTPUT_LOCK = threading.Lock()
-DEFAULT_WORKERS = 10
-MAX_BATCH = 50
-
-def activate_batch(accounts, region_code, workers=10):
-    results = []
-    total = len(accounts)
-    t0 = time.time()
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        futures = {
-            ex.submit(activate_account, a["uid"], a["password"], region_code): i
-            for i, a in enumerate(accounts)
-        }
-        for fut in as_completed(futures):
-            try:
-                results.append(fut.result())
-            except Exception as e:
-                results.append({"success": False, "error": str(e)[:100], "uid": "?", "password": "?"})
-    elapsed = time.time() - t0
-    ok = sum(1 for r in results if r.get("success"))
-    return {
-        "total": total, "success": ok, "failed": total - ok,
-        "elapsed_sec": round(elapsed, 2),
-        "workers": workers, "region": region_code,
-        "results": results
-    }
-
-def save_batch_output(batch_result, filename=None):
-    if not filename:
-        filename = f"activated_{batch_result['region']}_{int(time.time())}.json"
-    clean = []
-    for r in batch_result.get("results", []):
-        if r.get("success"):
-            clean.append({
-                "uid": str(r.get("uid", "")),
-                "pass": str(r.get("password", "")),
-                "account_id": str(r.get("account_id", "")),
-                "jwt": str(r.get("jwt", "")),
-                "activate": True
-            })
-    with _OUTPUT_LOCK:
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(clean, f, indent=2, ensure_ascii=False)
-    return filename, len(clean)
-
-
-# ── MAIN ──
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8081))
-    print(f"💀 KAMOD Activator v2 (10 Threads) on port {port} 💀")
-    print(f"🔗 Single : GET  /api/activate?uid=X&password=Y&region=IND")
-    print(f"🔗 Batch  : GET  /api/activate_batch?accounts=uid1|pwd1;uid2|pwd2&region=IND&workers=10&save=1")
-    print(f"🔗 Batch  : POST /api/activate_batch  (JSON body)")
-    print(f"🔗 Health : GET  /health")
+    print(f"💀 KAMOD Activator running on port {port} 💀")
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
