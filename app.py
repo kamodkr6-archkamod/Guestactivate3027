@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-KAMOD DEVILS WILL RISE — Fast Batch Activator (gen.py pattern: INDIAN_IPS -> field 20)
+KAMOD DEVILS WILL RISE — Fast Batch Activator (IP pool + UA pool + device pool)
 Owner: @kamod_codex | Channel: @kamod_codex
 """
 
-import os, sys, json, time, random, hashlib, hmac, uuid, threading
+import os, sys, json, time, random, hashlib, hmac, uuid, threading, ipaddress, string
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -17,9 +17,7 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# ═══════════════════════════════════════════════════════════
-#  CONSTANTS
-# ═══════════════════════════════════════════════════════════
+# ── CONSTANTS ──
 APP_ID = 100067
 CLIENT_SECRET = "2ee44819e9b4598845141067b281621874d0d5d7af9d8f7e00c1e54715b7d1e3"
 CLIENT_VERSION = "2.132.4"
@@ -36,27 +34,7 @@ AES_IV  = bytes([54, 111, 121, 90, 68, 114, 50, 50, 69, 51, 121, 99, 104, 106, 7
 DEFAULT_WORKERS = 10
 MAX_BATCH = 50
 
-# ═══════════════════════════════════════════════════════════
-#  IP POOLS  (gen.py jaisa — metadata field 20 ke liye)
-# ═══════════════════════════════════════════════════════════
-INDIAN_IPS = [
-    "49.36.180.10", "49.36.180.22", "49.36.181.15", "49.36.182.45",
-    "103.87.24.10", "103.87.24.25", "103.87.25.14", "103.87.25.30",
-    "115.99.10.20", "115.99.10.35", "115.99.11.40", "115.99.11.55",
-    "49.36.83.10", "49.36.83.22", "49.36.84.15", "49.36.84.30",
-    "103.25.12.10", "103.25.12.25", "103.25.13.14", "103.25.13.30",
-    "115.99.20.10", "115.99.20.22", "115.99.21.15", "115.99.21.30",
-    "49.36.100.10", "49.36.100.22", "49.36.101.15", "49.36.101.30",
-    "103.56.12.10", "103.56.12.25", "103.56.13.14", "103.56.13.30",
-    "49.36.120.10", "49.36.120.22", "49.36.121.15", "49.36.121.30",
-    "49.36.140.10", "49.36.140.22", "49.36.141.15", "49.36.141.30",
-    "49.36.160.10", "49.36.160.22", "49.36.161.15", "49.36.161.30",
-    "49.36.200.10", "49.36.200.22", "49.36.201.15", "49.36.201.30",
-]
-
-# ═══════════════════════════════════════════════════════════
-#  REGIONS
-# ═══════════════════════════════════════════════════════════
+# ── REGIONS ──
 REGIONS = {
     "IND": {
         "oauth_register": "https://connect.garena.com/api/v2/oauth/guest:register",
@@ -109,8 +87,224 @@ DEVICE_MODELS = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-#  PROTOBUF
+# IP POOL (с app.py)
 # ═══════════════════════════════════════════════════════════
+def _build_ip_pool():
+    pool = set()
+    ranges = [
+        ("1.",400),("5.",400),("14.",400),("27.",400),("31.",400),("36.",400),("37.",400),("39.",400),
+        ("41.",400),("42.",400),("43.",400),("45.",400),("46.",400),("47.",400),("49.",400),("58.",400),
+        ("59.",400),("60.",400),("61.",400),("62.",400),("77.",400),("78.",400),("79.",400),("80.",400),
+        ("81.",400),("82.",400),("83.",400),("84.",400),("85.",400),("86.",400),("87.",400),("88.",400),
+        ("89.",400),("90.",400),("91.",400),("92.",400),("93.",400),("94.",400),("95.",400),("101.",400),
+        ("102.",400),("103.",400),("104.",400),("105.",400),("106.",400),("107.",400),("108.",400),("109.",400),
+        ("110.",400),("111.",400),("112.",400),("113.",400),("114.",400),("115.",400),("116.",400),("117.",400),
+        ("118.",400),("119.",400),("120.",400),("121.",400),("122.",400),("123.",400),("124.",400),("125.",400),
+        ("126.",400),("128.",400),("129.",400),("130.",400),("131.",400),("132.",400),("133.",400),("134.",400),
+        ("135.",400),("136.",400),("137.",400),("138.",400),("139.",400),("140.",400),("141.",400),("142.",400),
+        ("143.",400),("144.",400),("145.",400),("146.",400),("147.",400),("148.",400),("149.",400),("150.",400),
+        ("151.",400),("152.",400),("153.",400),("154.",400),("155.",400),("156.",400),("157.",400),("158.",400),
+        ("159.",400),("160.",400),("161.",400),("162.",400),("163.",400),("164.",400),("165.",400),("166.",400),
+        ("167.",400),("168.",400),("169.",400),("170.",400),("171.",400),("172.",400),("173.",400),("174.",400),
+        ("175.",400),("176.",400),("177.",400),("178.",400),("179.",400),("180.",400),("181.",400),("182.",400),
+        ("183.",400),("184.",400),("185.",400),("186.",400),("187.",400),("188.",400),("189.",400),("190.",400),
+        ("191.",400),("192.",400),("193.",400),("194.",400),("195.",400),("196.",400),("197.",400),("198.",400),
+        ("199.",400),("200.",400),("201.",400),("202.",400),("203.",400),("204.",400),("205.",400),("206.",400),
+        ("207.",400),("208.",400),("209.",400),("210.",400),("211.",400),("212.",400),("213.",400),("214.",400),
+        ("215.",400),("216.",400),("217.",400),("218.",400),("219.",400),("220.",400),("221.",400),("222.",400),
+        ("223.",400),
+    ]
+    private_ranges = [
+        ipaddress.ip_network("10.0.0.0/8"), ipaddress.ip_network("172.16.0.0/12"),
+        ipaddress.ip_network("192.168.0.0/16"), ipaddress.ip_network("127.0.0.0/8"),
+        ipaddress.ip_network("169.254.0.0/16"), ipaddress.ip_network("224.0.0.0/4"),
+        ipaddress.ip_network("240.0.0.0/4"),
+    ]
+    for pfx, cnt in ranges:
+        for _ in range(cnt):
+            ip_str = f"{pfx}{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+            try:
+                ip_obj = ipaddress.ip_address(ip_str)
+                if any(ip_obj in net for net in private_ranges): continue
+                pool.add(ip_str)
+            except Exception: continue
+    pl = list(pool); random.shuffle(pl); return pl
+
+print("[*] Building IP pool...")
+IP_POOL = _build_ip_pool()
+print(f"[+] IP pool ready: {len(IP_POOL)} IPs")
+
+def pick_ip():
+    if not IP_POOL:
+        return f"{random.randint(1,223)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+    return IP_POOL[random.randint(0, len(IP_POOL) - 1)]
+
+def ip_headers():
+    real = pick_ip()
+    chain = [real]
+    for _ in range(random.randint(1, 3)): chain.append(pick_ip())
+    return {
+        "X-Forwarded-For": ", ".join(chain),
+        "X-Real-IP": real, "X-Client-IP": real, "X-Originating-IP": real,
+        "X-Remote-IP": real, "X-Remote-Addr": real,
+        "Forwarded": f"for={real};proto=https", "CF-Connecting-IP": real,
+    }
+
+# ═══════════════════════════════════════════════════════════
+# UA POOL (с app.py, укорочено до активаторных нужд)
+# ═══════════════════════════════════════════════════════════
+USER_AGENTS_POOL = [
+    "GarenaMSDK/4.0.39(SM-A325M;Android 13;en;HK;)",
+    "GarenaMSDK/4.0.38(Redmi Note 10;Android 12;en;ID;)",
+    "GarenaMSDK/4.0.40(Poco X3;Android 11;en;SG;)",
+    "GarenaMSDK/4.0.41(SM-S918B;Android 14;en;IN;)",
+    "GarenaMSDK/4.0.42(OnePlus 11;Android 13;en;US;)",
+    "GarenaMSDK/4.0.39(Xiaomi 13 Pro;Android 13;pt;BR;)",
+    "GarenaMSDK/4.0.40(Pixel 7 Pro;Android 14;en;US;)",
+    "GarenaMSDK/4.0.38(ASUS ROG Phone 7;Android 13;id;ID;)",
+    "GarenaMSDK/4.0.41(Infinix Note 12;Android 12;th;TH;)",
+    "GarenaMSDK/4.0.43(SM-G998B;Android 13;ar;EG;)",
+    "GarenaMSDK/4.0.37(Redmi Note 11;Android 11;es;MX;)",
+    "GarenaMSDK/4.0.40(Poco F5;Android 13;en;VN;)",
+    "GarenaMSDK/4.0.42(Realme GT 3;Android 13;hi;IN;)",
+    "GarenaMSDK/4.0.39(Vivo V27;Android 13;en;PH;)",
+    "GarenaMSDK/4.0.41(OPPO Reno 10;Android 13;id;ID;)",
+    "GarenaMSDK/4.0.44(SM-S928B;Android 14;en;SG;)",
+    "GarenaMSDK/4.0.42(Xiaomi 14;Android 14;id;ID;)",
+    "GarenaMSDK/4.0.40(Poco X5 Pro;Android 12;en;MY;)",
+    "GarenaMSDK/4.0.39(Vivo X80;Android 12;vi;VN;)",
+    "GarenaMSDK/4.0.43(Realme 11 Pro;Android 13;hi;IN;)",
+]
+_SAMSUNG_MODELS = [("SM-A325M","13"),("SM-A525F","13"),("SM-A725F","13"),("SM-A127F","12"),("SM-A037F","11"),
+                   ("SM-A546E","14"),("SM-A346E","14"),("SM-A146P","13"),("SM-M236B","13"),("SM-M536B","14"),
+                   ("SM-S901E","13"),("SM-S908E","13"),("SM-S918B","14"),("SM-G998B","13"),("SM-G991B","13")]
+_REGS = ["HK","ID","SG","MY","PH","TH","VN"]
+for m, o in _SAMSUNG_MODELS:
+    for r in _REGS:
+        USER_AGENTS_POOL.append(f"GarenaMSDK/4.0.39({m};Android {o};en;{r};)")
+_XIAOMI = ["Poco X3","Poco X3 Pro","Poco F3","Poco F4","Poco F5","Poco M4 Pro","Poco M5","Xiaomi 12","Xiaomi 12 Pro",
+           "Xiaomi 13 Pro","Xiaomi 14","Xiaomi 14 Pro","Redmi Note 10","Redmi Note 11","Redmi Note 12","Redmi Note 13"]
+for m in _XIAOMI:
+    for o in ["11","12","13","14"]:
+        for r in _REGS:
+            USER_AGENTS_POOL.append(f"GarenaMSDK/4.0.40({m};Android {o};en;{r};)")
+USER_AGENTS_POOL = list(dict.fromkeys(USER_AGENTS_POOL))
+print(f"[+] UA pool ready: {len(USER_AGENTS_POOL)}")
+
+def random_ua(): return random.choice(USER_AGENTS_POOL)
+
+# ═══════════════════════════════════════════════════════════
+# DEVICE POOL (расширенный, как в app.py)
+# ═══════════════════════════════════════════════════════════
+class DevicePool:
+    _devices, _index, _lock = [], 0, threading.Lock()
+    DEVICE_MODELS = [
+        ("Asus ASUS_I005DA", "ARMv7 VFPv3 NEON VMH | 2400 | 2", "Adreno (TM) 640"),
+        ("SM-A525F", "ARMv8 VFPv4 NEON VMH | 2200 | 8", "Adreno (TM) 618"),
+        ("SM-A325M", "ARMv8 VFPv4 NEON VMH | 2000 | 8", "Mali-G52"),
+        ("SM-S918B", "ARMv8 VFPv4 NEON VMH | 3200 | 8", "Adreno (TM) 740"),
+        ("Redmi Note 10","ARMv8 VFPv4 NEON VMH | 2200 | 8","Adreno (TM) 619"),
+        ("Redmi Note 11","ARMv8 VFPv4 NEON VMH | 2400 | 8","Adreno (TM) 610"),
+        ("Poco X3","ARMv8 VFPv4 NEON VMH | 2300 | 8","Adreno (TM) 618"),
+        ("Poco M4 Pro","ARMv8 VFPv4 NEON VMH | 2200 | 8","Mali-G57"),
+        ("Pixel 6","ARMv8 VFPv4 NEON VMH | 2800 | 8","Mali-G78"),
+        ("Pixel 7 Pro","ARMv8 VFPv4 NEON VMH | 2800 | 8","Mali-G710"),
+        ("OnePlus 9","ARMv8 VFPv4 NEON VMH | 2800 | 8","Adreno (TM) 660"),
+        ("OnePlus 11","ARMv8 VFPv4 NEON VMH | 3200 | 8","Adreno (TM) 740"),
+        ("Xiaomi 13 Pro","ARMv8 VFPv4 NEON VMH | 3200 | 8","Adreno (TM) 740"),
+        ("Infinix X6819","ARMv8 VFPv4 NEON VMH | 2400 | 8","Mali-G57"),
+        ("vivo 1906","ARMv8 VFPv4 NEON VMH | 2000 | 8","Adreno (TM) 610"),
+        ("OPPO CPH2211","ARMv8 VFPv4 NEON VMH | 2200 | 8","Adreno (TM) 619"),
+        ("realme RMX3363","ARMv8 VFPv4 NEON VMH | 2400 | 8","Adreno (TM) 642"),
+        ("TECNO KI5","ARMv8 VFPv4 NEON VMH | 2000 | 8","Mali-G52"),
+    ]
+    ANDROID_VERSIONS = [
+        ("Android OS 9 / API-28 (PI/rel.cjw.20220518.114133)","9","28"),
+        ("Android OS 10 / API-29 (QKQ1.200114.002)","10","29"),
+        ("Android OS 11 / API-30 (RP1A.201005.001)","11","30"),
+        ("Android OS 12 / API-31 (SP1A.210812.016)","12","31"),
+        ("Android OS 12L / API-32 (SP2A.220505.002)","12","32"),
+        ("Android OS 13 / API-33 (TQ3A.230805.001)","13","33"),
+        ("Android OS 14 / API-34 (UP1A.231005.007)","14","34"),
+    ]
+    NETWORKS  = ["WIFI","4G","5G"]
+    OPERATORS = ["ATM Mobils","Telkomsel","Indosat","XL Axiata","Airtel","Jio","Vodafone","Globe","Smart","Viettel","Mobifone","Claro","Vivo"]
+    SDK_VER   = ["4.0.38","4.0.39","4.0.40","4.0.41","4.0.42"]
+
+    @classmethod
+    def _rh(cls, n): return ''.join(random.choices("0123456789abcdef", k=n))
+    @classmethod
+    def _uuid(cls): return f"{cls._rh(8)}-{cls._rh(4)}-{cls._rh(4)}-{cls._rh(4)}-{cls._rh(12)}"
+    @classmethod
+    def _mac(cls):  return "02:" + ":".join(cls._rh(2) for _ in range(5))
+
+    @classmethod
+    def init_pool(cls, count=1500):
+        if cls._devices: return
+        for _ in range(count):
+            model, cpu, gpu = random.choice(cls.DEVICE_MODELS)
+            android_full, android_ver, api = random.choice(cls.ANDROID_VERSIONS)
+            d = {
+                "model": model, "brand": model.split()[0], "cpu": cpu, "gpu": gpu,
+                "android_full": android_full, "android_version": android_ver, "api_level": api,
+                "operator": random.choice(cls.OPERATORS), "network": random.choice(cls.NETWORKS),
+                "sdk": random.choice(cls.SDK_VER), "mac": cls._mac(),
+                "device_id": cls._rh(32), "android_id": cls._rh(16), "uuid": cls._uuid(),
+                "imei": cls._rh(15), "fingerprint": cls._rh(40), "gl_renderer": "OpenGL ES 3.2",
+                "lang_code": random.choice(["en","in","ar","hi","vi","th","pt","ru","es","bn","ur","zh"]),
+            }
+            d["_hdr"] = {
+                "X-Device-Id": d["device_id"], "X-Android-Id": d["android_id"],
+                "X-Device-Model": d["model"],  "X-Device-Brand": d["brand"],
+                "X-OS-Version": d["android_version"], "X-API-Level": d["api_level"],
+                "X-SDK-Version": d["sdk"], "X-Network-Type": d["network"],
+                "X-Operator": d["operator"], "X-IMEI": d["imei"],
+                "X-Mac": d["mac"], "X-Client-Uuid": d["uuid"],
+            }
+            d["_gpu_full"] = f"{gpu}|OpenGL ES 3.2"
+            cls._devices.append(d)
+
+    @classmethod
+    def get(cls):
+        with cls._lock:
+            d = cls._devices[cls._index % len(cls._devices)]
+            cls._index += 1
+            return d
+
+    @classmethod
+    def headers(cls, device=None):
+        d = device or cls.get()
+        return d.get("_hdr") or {}
+
+DevicePool.init_pool(1500)
+print(f"[+] Device pool ready: {len(DevicePool._devices)} devices")
+
+# ── THREAD-LOCAL ──
+_tl = threading.local()
+
+def get_thread_device():
+    if not hasattr(_tl, "device"):
+        _tl.device = DevicePool.get()
+        _tl.dev_headers = _tl.device["_hdr"]
+    return _tl.device
+
+def get_thread_dev_headers():
+    if not hasattr(_tl, "dev_headers"):
+        _tl.device = DevicePool.get()
+        _tl.dev_headers = _tl.device["_hdr"]
+    return _tl.dev_headers
+
+def _merge_headers(headers, device=None, rotate_ip=True):
+    if headers is None: headers = {}
+    merged = dict(headers)
+    dev_h = DevicePool.headers(device) if device is not None else get_thread_dev_headers()
+    for k, v in dev_h.items():
+        merged.setdefault(k, v)
+    if rotate_ip or "X-Forwarded-For" not in merged:
+        merged.update(ip_headers())
+    return merged
+
+# ── PROTOBUF ──
 def write_varint(value):
     out = []
     while value > 127:
@@ -159,9 +353,7 @@ def parse_proto(data):
         except: break
     return out
 
-# ═══════════════════════════════════════════════════════════
-#  CRYPTO
-# ═══════════════════════════════════════════════════════════
+# ── CRYPTO ──
 def aes_encrypt(plain):
     if not isinstance(plain, (bytes, bytearray)): plain = plain.encode("utf-8")
     return AES.new(AES_KEY, AES.MODE_CBC, AES_IV).encrypt(pad(plain, AES.block_size))
@@ -173,62 +365,28 @@ def aes_decrypt(ciphertext):
         except ValueError: return AES.new(AES_KEY, AES.MODE_CBC, AES_IV).decrypt(ciphertext)
     except: return ciphertext
 
-# ═══════════════════════════════════════════════════════════
-#  NETWORK PROXY (gen.py jaisa: working_proxies.txt)
-# ═══════════════════════════════════════════════════════════
-_PROXY_LOCK = threading.Lock()
-_WORKING_PROXIES = []
-_PROXY_LOADED = False
-
-def load_working_proxies():
-    global _WORKING_PROXIES, _PROXY_LOADED
-    with _PROXY_LOCK:
-        if _PROXY_LOADED:
-            return
-        _PROXY_LOADED = True
-        path = "working_proxies.txt"
-        if not os.path.exists(path):
-            return
-        pool = []
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    pool.append(line)
-        _WORKING_PROXIES = pool
-
-def get_network_proxy():
-    load_working_proxies()
-    if not _WORKING_PROXIES:
-        return None
-    p = random.choice(_WORKING_PROXIES)
-    return {"http": p, "https": p}
-
+# ── SESSION ──
 def create_session(proxy=None):
     s = requests.Session()
     s.verify = False
     adapter = HTTPAdapter(pool_connections=20, pool_maxsize=50, max_retries=0)
     s.mount("https://", adapter)
     s.mount("http://", adapter)
-    if proxy:
-        s.proxies = proxy
+    if proxy: s.proxies = {"http": proxy, "https": proxy}
     return s
 
-# ═══════════════════════════════════════════════════════════
-#  METADATA IP  (gen.py jaisa — field 20 ke liye)
-# ═══════════════════════════════════════════════════════════
-def pick_client_ip(region_code):
-    if region_code == "IND" and INDIAN_IPS:
-        return random.choice(INDIAN_IPS)
-    reg = REGIONS.get(region_code)
-    if not reg:
-        return "49.36.180.10"
-    subnet = random.choice(reg["ip_subnets"])
-    return f"{subnet}.{random.randint(1,250)}.{random.randint(1,250)}"
+# ── PROXY ──
+def get_proxy(region):
+    if not os.path.exists("proxies.txt"): return None
+    pool = []
+    with open("proxies.txt", "r") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith(f"{region}:"):
+                pool.append(line.split(":", 1)[1])
+    return f"http://{random.choice(pool)}" if pool else None
 
-# ═══════════════════════════════════════════════════════════
-#  DATADOME
-# ═══════════════════════════════════════════════════════════
+# ── DATADOME ──
 def fetch_datadome_cookie(session, device_info, target_url):
     try:
         now_ms = int(time.time() * 1000)
@@ -238,7 +396,7 @@ def fetch_datadome_cookie(session, device_info, target_url):
         payload = {
             "cid": "", "ddv": DATADOME_VERSION, "ddvc": MSDK_VERSION, "ddk": DATADOME_KEY,
             "request": target_url, "os": "Android", "osr": "10", "osn": "Q", "osv": "29",
-            "ua": f"GarenaMSDK/{MSDK_VERSION}({mdl} ;Android 10;en;US;app 1.132.1 2019121227;)",
+            "ua": random_ua(),
             "screen_x": 1080, "screen_y": 2400, "screen_d": 420,
             "events": json.dumps([{"id": 1, "message": "response validation", "source": "sdk", "date": now_ms}]),
             "camera": json.dumps({"auth": "false", "info": "{}"}),
@@ -247,6 +405,7 @@ def fetch_datadome_cookie(session, device_info, target_url):
             "tgs": "release-keys", "inte": "android-java-okhttp"
         }
         headers = {"content-type": "application/x-www-form-urlencoded", "user-agent": "okhttp/4.12.0", "accept-encoding": "gzip"}
+        headers.update(ip_headers())
         r = session.post(DATADOME_SDK_URL, data=payload, headers=headers, timeout=8)
         if r.status_code == 200:
             raw_cookie = r.json().get("cookie", "")
@@ -258,9 +417,7 @@ def fetch_datadome_cookie(session, device_info, target_url):
     except: pass
     return None
 
-# ═══════════════════════════════════════════════════════════
-#  DEVICE-ID
-# ═══════════════════════════════════════════════════════════
+# ── DEVICE-ID ──
 def generate_device_id(session, device_info, dd_cookie=None, region_host="ffmmsdk.ppmainecoonghj.com"):
     try:
         brand = device_info.get("brand", "Google")
@@ -282,13 +439,14 @@ def generate_device_id(session, device_info, dd_cookie=None, region_host="ffmmsd
         body = json.dumps(body_obj, separators=(",", ":"))
         sig = hmac.new(CLIENT_SECRET.encode(), body.encode(), hashlib.sha256).hexdigest()
         headers = {
-            "User-Agent": f"GarenaMSDK/{MSDK_VERSION}({mdl} ;Android 10;en;US;app 1.132.1 2019121227;)",
+            "User-Agent": random_ua(),
             "Authorization": f"Signature {sig}",
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
             "Host": region_host,
         }
         if dd_cookie: headers["Cookie"] = f"datadome={dd_cookie}"
+        headers.update(ip_headers())
         r = session.post(url, data=body, headers=headers, timeout=10)
         if r.status_code == 200:
             d = r.json()
@@ -297,13 +455,10 @@ def generate_device_id(session, device_info, dd_cookie=None, region_host="ffmmsd
     except: pass
     return None
 
-# ═══════════════════════════════════════════════════════════
-#  TOKEN
-# ═══════════════════════════════════════════════════════════
+# ── TOKEN ──
 def get_token(session, uid, password, region_code, device_info, device_id=""):
     reg = REGIONS[region_code]
     tok_url = reg["oauth_token"]
-    model = device_info["model"].split(" ")[-1] if " " in device_info["model"] else device_info["model"]
     payload = {
         "client_id": APP_ID, "client_secret": CLIENT_SECRET, "client_type": 2,
         "device_id": device_id or "", "password": password,
@@ -311,10 +466,11 @@ def get_token(session, uid, password, region_code, device_info, device_id=""):
     }
     body = json.dumps(payload, separators=(",", ":"))
     headers = {
-        "User-Agent": f"GarenaMSDK/{MSDK_VERSION}({model} ;Android 10;en;US;app 1.132.1 2019121227;)",
+        "User-Agent": random_ua(),
         "Content-Type": "application/json; charset=utf-8",
         "Host": tok_url.split("/")[2],
     }
+    headers.update(ip_headers())
     try:
         r = session.post(tok_url, data=body, headers=headers, timeout=15)
         if r.status_code == 200:
@@ -324,15 +480,14 @@ def get_token(session, uid, password, region_code, device_info, device_id=""):
         return None, None
     except: return None, None
 
-# ═══════════════════════════════════════════════════════════
-#  MAJOR LOGIN  (field 20 = INDIAN_IPS from pool)
-# ═══════════════════════════════════════════════════════════
+# ── MAJOR LOGIN ──
 def send_major_login(session, access_token, open_id, region_code, device_info):
     reg = REGIONS[region_code]
     host = reg["login_host"]
     city, prov = random.choice(reg["cities"])
     isp = random.choice(reg["isps"])
-    client_ip = pick_client_ip(region_code)
+    subnet = random.choice(reg["ip_subnets"])
+    client_ip = f"{subnet}.{random.randint(1,250)}.{random.randint(1,250)}"
     model = device_info["model"]
 
     fields = {
@@ -369,6 +524,7 @@ def send_major_login(session, access_token, open_id, region_code, device_info):
         "Content-Type": "application/x-www-form-urlencoded",
         "X-Unity-Version": "2018.4.12f1",
     }
+    headers.update(ip_headers())
     try:
         r = session.post(f"https://{host}/MajorLogin", data=encrypted, headers=headers, timeout=25)
         print(f"[MajorLogin:{open_id[:6]}...] HTTP {r.status_code} len={len(r.content)}")
@@ -385,7 +541,7 @@ def send_major_login(session, access_token, open_id, region_code, device_info):
                     try: jwt = jwt.decode("utf-8", "ignore")
                     except: jwt = ""
                 if isinstance(jwt, str) and jwt.startswith("eyJ") and jwt.count(".") == 2:
-                    print(f"[MajorLogin:{open_id[:6]}...] ✅ JWT OK")
+                    print(f"[MajorLogin:{open_id[:6]}...] JWT OK")
                     return jwt
             except: pass
         print(f"[MajorLogin:{open_id[:6]}...] No JWT hex={raw[:32].hex()}")
@@ -393,15 +549,14 @@ def send_major_login(session, access_token, open_id, region_code, device_info):
         print(f"[MajorLogin] Exception: {e}")
     return None
 
-# ═══════════════════════════════════════════════════════════
-#  GETLOGINDATA  (field 20 = INDIAN_IPS from pool)
-# ═══════════════════════════════════════════════════════════
+# ── GETLOGINDATA ──
 def get_login_data(session, jwt, open_id, region_code, device_info):
     reg = REGIONS[region_code]
     host = reg["client_host"]
     city, prov = random.choice(reg["cities"])
     isp = random.choice(reg["isps"])
-    client_ip = pick_client_ip(region_code)
+    subnet = random.choice(reg["ip_subnets"])
+    client_ip = f"{subnet}.{random.randint(1,250)}.{random.randint(1,250)}"
 
     fields = {
         3: time.strftime("%Y-%m-%d %H:%M:%S"), 4: "free fire", 5: 2, 7: CLIENT_VERSION,
@@ -436,6 +591,7 @@ def get_login_data(session, jwt, open_id, region_code, device_info):
         "Content-Type": "application/x-www-form-urlencoded",
         "X-Unity-Version": "2018.4.12f1",
     }
+    headers.update(ip_headers())
     try:
         r = session.post(f"https://{host}/GetLoginData", data=encrypted, headers=headers, timeout=20)
         print(f"[GetLoginData] HTTP {r.status_code}")
@@ -444,9 +600,7 @@ def get_login_data(session, jwt, open_id, region_code, device_info):
         print(f"[GetLoginData] Exception: {e}")
         return False
 
-# ═══════════════════════════════════════════════════════════
-#  HOMER
-# ═══════════════════════════════════════════════════════════
+# ── HOMER ──
 def equip_homer(session, jwt, region_code, device_info):
     reg = REGIONS[region_code]
     host = reg["client_host"]
@@ -460,9 +614,11 @@ def equip_homer(session, jwt, region_code, device_info):
         "Content-Type": "application/x-www-form-urlencoded",
         "X-Unity-Version": "2018.4.12f1",
     }
+    base_headers.update(ip_headers())
     def call_ep(ep, payload=b""):
         raw = aes_encrypt(assemble_proto(payload) if isinstance(payload, dict) else payload)
         h = dict(base_headers); h["X-GA-SV"] = str(int(time.time()))
+        h.update(ip_headers())
         try: return session.post(f"https://{host}/{ep}", data=raw, headers=h, timeout=12).status_code == 200
         except: return False
     r1 = call_ep("GiveAccountNewbieRoles", {1: 3})
@@ -473,9 +629,7 @@ def equip_homer(session, jwt, region_code, device_info):
     ))
     return r1 and r2
 
-# ═══════════════════════════════════════════════════════════
-#  DECODE AID
-# ═══════════════════════════════════════════════════════════
+# ── DECODE AID ──
 def decode_account_id(jwt):
     try:
         import base64
@@ -484,65 +638,78 @@ def decode_account_id(jwt):
         return jd.get("account_id") or jd.get("uid") or "N/A"
     except: return "N/A"
 
-# ═══════════════════════════════════════════════════════════
-#  ACTIVATE SINGLE
-# ═══════════════════════════════════════════════════════════
-def activate_account(uid, password, region_code, max_retries=3):
+# ── ACTIVATE SINGLE ──
+def activate_account(uid, password, region_code):
     if region_code not in REGIONS:
         return {"success": False, "error": f"Bad region {region_code}", "uid": uid, "password": password}
+    device_info = random.choice(DEVICE_MODELS)
+    proxy = get_proxy(region_code)
+    session = create_session(proxy=proxy)
+    reg = REGIONS[region_code]
 
-    last = None
-    for attempt in range(1, max_retries + 1):
-        device_info = random.choice(DEVICE_MODELS)
-        net_proxy = get_network_proxy()
-        session = create_session(proxy=net_proxy)
-        reg = REGIONS[region_code]
+    print(f"\n[{uid}] ── START (region={region_code} device={device_info['model']} proxy={proxy or 'DIRECT'})")
 
-        print(f"\n[{uid}] attempt {attempt} region={region_code} "
-              f"net={'PROXY' if net_proxy else 'DIRECT'}")
+    # 1. DataDome
+    dd = fetch_datadome_cookie(session, device_info, reg["oauth_token"])
+    print(f"[{uid}] DataDome: {'OK' if dd else 'NO COOKIE'}")
 
-        dd = fetch_datadome_cookie(session, device_info, reg["oauth_token"])
-        device_id = generate_device_id(session, device_info, dd)
-        at, oi = get_token(session, uid, password, region_code, device_info, device_id or "")
-        if not at:
-            print(f"[{uid}] attempt {attempt} ❌ Token FAIL")
-            last = {"success": False, "error": "Token Grant Failed", "uid": uid, "password": password}
-            continue
+    # 2. Device ID
+    device_id = generate_device_id(session, device_info, dd)
+    print(f"[{uid}] DeviceID: {'OK' if device_id else 'FAIL'}")
 
-        jwt = send_major_login(session, at, oi, region_code, device_info)
-        if not jwt:
-            print(f"[{uid}] attempt {attempt} ❌ MajorLogin FAIL")
-            last = {"success": False, "error": "Major Login Failed", "uid": uid, "password": password}
-            continue
+    # 3. Token grant
+    at, oi = get_token(session, uid, password, region_code, device_info, device_id or "")
+    if not at:
+        print(f"[{uid}] Token FAIL")
+        return {"success": False, "error": "Token Grant Failed", "uid": uid, "password": password}
+    print(f"[{uid}] Token: OK (open_id={oi[:8]}...)")
 
-        gw_ok = get_login_data(session, jwt, oi, region_code, device_info)
-        homer_ok = equip_homer(session, jwt, region_code, device_info)
-        aid = decode_account_id(jwt)
+    # 4. Major Login
+    jwt = send_major_login(session, at, oi, region_code, device_info)
+    if not jwt:
+        print(f"[{uid}] MajorLogin FAIL")
+        return {"success": False, "error": "Major Login Failed", "uid": uid, "password": password}
+    print(f"[{uid}] MajorLogin: JWT OK")
 
-        success = gw_ok and homer_ok
-        print(f"[{uid}] attempt {attempt} → gw={'OK' if gw_ok else 'FAIL'} "
-              f"homer={'OK' if homer_ok else 'FAIL'}")
+    # 5. GetLoginData
+    gw_ok = get_login_data(session, jwt, oi, region_code, device_info)
 
-        if success:
-            return {
-                "success": True,
-                "message": f"Activated (gw=OK, homer=OK)",
-                "uid": uid, "password": password, "account_id": aid,
-                "region": region_code, "jwt": jwt, "activate": True
-            }
+    # 6. Homer
+    homer_ok = equip_homer(session, jwt, region_code, device_info)
 
-        last = {
+    aid = decode_account_id(jwt)
+
+    if not gw_ok:
+        print(f"[{uid}] FAILED: GetLoginData (gw) failed")
+        return {
             "success": False,
-            "error": f"Partial (gw={'OK' if gw_ok else 'FAIL'}, homer={'OK' if homer_ok else 'FAIL'})",
-            "uid": uid, "password": password, "account_id": aid,
-            "region": region_code, "jwt": jwt
+            "error": "GetLoginData (gw) failed",
+            "uid": uid, "password": password,
+            "account_id": aid, "region": region_code,
+            "jwt": jwt, "gw_ok": False, "homer_ok": homer_ok
+        }
+    if not homer_ok:
+        print(f"[{uid}] FAILED: Homer equip failed")
+        return {
+            "success": False,
+            "error": "Homer equip failed",
+            "uid": uid, "password": password,
+            "account_id": aid, "region": region_code,
+            "jwt": jwt, "gw_ok": gw_ok, "homer_ok": False
         }
 
-    return last or {"success": False, "error": "All retries failed", "uid": uid, "password": password}
+    print(f"[{uid}] DONE aid={aid} gw=OK homer=OK")
+    return {
+        "success": True,
+        "message": "Activated (gw=OK, homer=OK)",
+        "uid": uid, "password": password, "account_id": aid,
+        "region": region_code, "jwt": jwt,
+        "activate": True, "gw_ok": True, "homer_ok": True
+    }
 
-# ═══════════════════════════════════════════════════════════
-#  ACTIVATE BATCH
-# ═══════════════════════════════════════════════════════════
+# ── BATCH ──
+_OUTPUT_LOCK = threading.Lock()
+
 def activate_batch(accounts, region_code, workers=10):
     results = []
     total = len(accounts)
@@ -565,10 +732,6 @@ def activate_batch(accounts, region_code, workers=10):
         "results": results
     }
 
-# ═══════════════════════════════════════════════════════════
-#  SAVE
-# ═══════════════════════════════════════════════════════════
-_OUTPUT_LOCK = threading.Lock()
 def save_batch_output(batch_result, filename=None):
     if not filename:
         filename = f"activated_{batch_result['region']}_{int(time.time())}.json"
@@ -587,9 +750,7 @@ def save_batch_output(batch_result, filename=None):
             json.dump(clean, f, indent=2, ensure_ascii=False)
     return filename, len(clean)
 
-# ═══════════════════════════════════════════════════════════
-#  HTTP HANDLER
-# ═══════════════════════════════════════════════════════════
+# ── HTTP ──
 class Handler(BaseHTTPRequestHandler):
     def _json(self, code, obj):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -616,10 +777,13 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/":
             return self._json(200, {
-                "service": "KAMOD Activator v4 (gen.py pattern)",
+                "service": "KAMOD Activator v3 (IP pool + UA pool)",
                 "status": "online",
-                "ip_pool": f"{len(INDIAN_IPS)} INDIAN_IPS (metadata field 20)",
-                "network": "working_proxies.txt (optional)",
+                "pools": {
+                    "ip": len(IP_POOL),
+                    "ua": len(USER_AGENTS_POOL),
+                    "devices": len(DevicePool._devices),
+                },
                 "endpoints": [
                     "GET  /api/activate?uid=X&password=Y&region=IND",
                     "GET  /api/activate_batch?accounts=uid1|pwd1;uid2|pwd2&region=IND&workers=10&save=1",
@@ -629,7 +793,12 @@ class Handler(BaseHTTPRequestHandler):
             })
 
         if path == "/health":
-            return self._json(200, {"status": "ok", "time": time.time()})
+            return self._json(200, {
+                "status": "ok", "time": time.time(),
+                "ip_pool": len(IP_POOL),
+                "ua_pool": len(USER_AGENTS_POOL),
+                "device_pool": len(DevicePool._devices),
+            })
 
         if path == "/api/activate":
             uid = qs.get("uid", [""])[0]
@@ -701,16 +870,12 @@ class Handler(BaseHTTPRequestHandler):
 
         return self._json(404, {"error": "Not found", "path": path})
 
-# ═══════════════════════════════════════════════════════════
-#  MAIN
-# ═══════════════════════════════════════════════════════════
+# ── MAIN ──
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8081))
-    print(f"💀 KAMOD Activator v4 (gen.py pattern) on port {port} 💀")
-    print(f"📡 IP pool: {len(INDIAN_IPS)} INDIAN_IPS -> metadata field 20")
-    print(f"🌐 Network: working_proxies.txt (optional, direct fallback)")
-    print(f"🔗 Single : GET  /api/activate?uid=X&password=Y&region=IND")
-    print(f"🔗 Batch  : GET  /api/activate_batch?accounts=uid1|pwd1;uid2|pwd2&region=IND&workers=10&save=1")
-    print(f"🔗 Batch  : POST /api/activate_batch  (JSON body)")
-    print(f"🔗 Health : GET  /health")
+    print(f"KAMOD Activator v3 (IP pool + UA pool) on port {port}")
+    print(f"Single : GET  /api/activate?uid=X&password=Y&region=IND")
+    print(f"Batch  : GET  /api/activate_batch?accounts=uid1|pwd1;uid2|pwd2&region=IND&workers=10&save=1")
+    print(f"Batch  : POST /api/activate_batch  (JSON body)")
+    print(f"Health : GET  /health")
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
